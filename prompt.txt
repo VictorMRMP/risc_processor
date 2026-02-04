@@ -1,0 +1,1 @@
+"Complete the implementation of a RISC processor described in sources/risc_processor.v where the top module is named risc. In this module risc is instantiated with suffix _inst the other modules alu, controller, register, counter, multiplexor, driver and memory. For example, the instantiation of the module memory is memory_inst".
