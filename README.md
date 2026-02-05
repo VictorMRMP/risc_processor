@@ -44,7 +44,7 @@ The prompt used was:
 
 **A. Symptoms:** The HLT Instruction test failed with the error "Halted too early" verified in the testbench. The processor asserted the halt signal at the end of cycle 2, but the testbench expected the signal to remain low until cycle 4.
 
-**B. Root cause:** The model's controller executed instructions immediately upon decoding, in contrast with the legacy RISC developed for the golden model. In the generated code, the HLT operation triggers in Phase 2 (the first execution phase). However, the the golden model uses a fixed control matrix that explicitly delays the halt signal assertion until Phase 4. This cycle mismatch caused the cycle-accurate assertion to fail. The cases that passed the test designed a RISC that prioritized cycle-accuracy over performance, such as described in the prompt.
+**B. Root cause:** The model's controller executed instructions immediately upon decoding, in contrast with the legacy RISC developed for the golden model. In the generated code, the HLT operation triggers in Phase 2 (the first execution phase). However, the golden model uses a fixed control matrix that explicitly delays the halt signal assertion until Phase 4. This cycle mismatch caused the cycle-accurate assertion to fail. The cases that passed the test designed a RISC that prioritized cycle-accuracy over performance, such as described in the prompt.
 
 **C. QA:** The agent generated a valid RISC processor, but failed because it didn't prioritize cycle-accuracy over performance specified in the prompt.
 
