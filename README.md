@@ -1,4 +1,4 @@
-# VeriRisc Processor (Verilog)
+# Risc Processor (Verilog)
 
 This project is the implementation of a simple RISC processor in Verilog, developed as part of the "Verilog Language and Application" (VLA) academic course from Cadence. The design includes all the essential components of a CPU, such as an Arithmetic Logic Unit (ALU), a Control Unit (FSM), registers, and memory.
 
@@ -31,7 +31,7 @@ Based on the controller logic and test programs, the processor implements the fo
 | **JMP** | `111` | Jumps to a specific memory address. |
 
 ## Evaluating Results
-
+![Evaluation test cases](img/Results.png) 
 ## Agent Failure Analysis
 **A. Symptoms:** The HLT Instruction test failed with the error "Halted too early" verified in the testbench. The processor asserted the halt signal at the end of cycle 2, but the testbench expected the signal to remain low until cycle 4.
 
