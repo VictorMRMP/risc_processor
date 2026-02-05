@@ -312,8 +312,8 @@ async def risc_verification_suite(dut):
         await RisingEdge(dut.clk) # clock(1)
         dut.rst.value = 0
         await RisingEdge(dut.clk) # clock(1)
-        #await RisingEdge(dut.clk) # clock(1)
-        await Timer(1, units='ps')
+        await RisingEdge(dut.clk) # clock(1)
+        #await Timer(1, units='ps')
 
 
     dut._log.info("-------------------------------------------")
@@ -342,7 +342,7 @@ async def risc_verification_suite(dut):
         
         # E. Run 1 more cycle
         await RisingEdge(dut.clk)
-        await Timer(1, units='ps')
+        #await Timer(1, units='ps')
         
         # F. Check Expect(1) - Should BE halted now
         assert dut.halt.value == 1, f"{name} Failed: Did not halt after {cycles}+1 cycles"
@@ -378,7 +378,7 @@ async def risc_verification_suite(dut):
         
         # E. Run 1 more cycle
         await RisingEdge(dut.clk)
-        await Timer(1, units='ps')
+        #await Timer(1, units='ps')
 
         
         # F. Expect(1)
