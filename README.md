@@ -31,7 +31,12 @@ Based on the controller logic and test programs, the processor implements the fo
 | **JMP** | `111` | Jumps to a specific memory address. |
 
 ## Evaluating Results
+
+The prompt used was: ""Implement a structural 8-bit RISC processor (top module risc) with AWIDTH=5 and DWIDTH=8 by instantiating the following modules using an inst suffix: a 3-bit phase counter , a controller , a 5-bit counter as the PC , an address multiplexor , a 32x8-bit memory which array is called `mem_array`, an instruction register , an alu , an accumulator register , and a tri-state driver. The architecture utilizes an 8-bit instruction split into a 3-bit opcode and 5-bit address , driven by an 8-phase control cycle (phases 0-7) to support operations including HLT, SKZ, JMP, LDA, STO, ADD, AND, and XOR. The system must feature a bidirectional data bus , a zero flag feedback loop from the ALU to the controller , and parameterizable widths for all hardware components.The instruction opcode mapping must be strictly: HLT=0, SKZ=1, ADD=2, AND=3, XOR=4, LDA=5, STO=6, JMP=7. The RISC controller prioritize cycle-accuracy over performance."
+
 ![Evaluation test cases](img/Results.png) 
+
+
 ## Agent Failure Analysis
 **A. Symptoms:** The HLT Instruction test failed with the error "Halted too early" verified in the testbench. The processor asserted the halt signal at the end of cycle 2, but the testbench expected the signal to remain low until cycle 4.
 
