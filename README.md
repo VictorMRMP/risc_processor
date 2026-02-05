@@ -14,7 +14,7 @@ The processor is built from the following Verilog modules:
 * **`counter`**: A generic counter module. This is used as the **Program Counter (PC)**, responsible for pointing to the address of the next instruction to be executed. It supports `load` (for jumps), `enab` (for incrementing), and `rst` (reset).
 * **`multiplexor`**: A standard 2-to-1 multiplexer, used for selecting data sources within the datapath.
 * **`driver`**: A tri-state driver. This is essential for managing the shared `data` bus, allowing multiple components (like the ALU and memory) to write to the bus without conflict.
-* **`register`**: A tri-state driver. This is essential for managing the shared `data` bus, allowing multiple components (like the ALU and memory) to write to the bus without conflict.
+* **`register`**: A generic, synchronous register module with a parameterizable width (defaulting to 8 bits). It features a load enable signal and a synchronous rst.
 
 ## Implemented Instruction Set
 
