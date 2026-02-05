@@ -134,9 +134,7 @@ MANUAL_TESTS = [
 ]
 
 # B. FILE TESTS
-# I have cleaned the content to remove large comment blocks headers,
-# leaving only the necessary logic (@address and binary data).
-# This makes parsing robust against format changes.
+
 PROGRAM_FILES = {
     "CPUtest1": {
         "cycles": 138,
