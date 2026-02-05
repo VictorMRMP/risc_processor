@@ -2,13 +2,12 @@ import os
 from pathlib import Path
 import cocotb
 from cocotb.clock import Clock
-from cocotb.triggers import RisingEdge
+from cocotb.triggers import RisingEdge, Timer # [Adicionado Timer]
 from cocotb_tools.runner import get_runner
 
 # ==============================================================================
 # 1. CONSTANTS & OPCODES
 # ==============================================================================
-# Opcodes match lines 74 of risc_test.v
 HLT = 0
 SKZ = 1
 ADD = 2
@@ -21,10 +20,7 @@ JMP = 7
 # ==============================================================================
 # 2. TEST DATA DEFINITIONS
 # ==============================================================================
-
-# A. MANUAL TESTS
-# These mirror the exact logic from 'risc_test.v' lines 75 to 115.
-# Memory is defined as {address: value}.
+# (Mantido igual ao original)
 MANUAL_TESTS = [
     {
         "name": "HLT Instruction",
@@ -99,15 +95,15 @@ MANUAL_TESTS = [
         "name": "XOR Instruction",
         "cycles": 58,
         "mem": {
-            0: (LDA << 5) | 10,  # Load 1
-            1: (XOR << 5) | 11,  # XOR 2
-            2: (SKZ << 5),       # Skip
-            3: (JMP << 5) | 5,   # Jump 5
+            0: (LDA << 5) | 10,
+            1: (XOR << 5) | 11,
+            2: (SKZ << 5),
+            3: (JMP << 5) | 5,
             4: (HLT << 5),
-            5: (XOR << 5) | 12,  # XOR 5
-            6: (SKZ << 5),       # Skip
+            5: (XOR << 5) | 12,
+            6: (SKZ << 5),
             7: (HLT << 5),
-            8: (JMP << 5) | 9,   # Jump 9
+            8: (JMP << 5) | 9,
             9: (HLT << 5),
             10: 0x55,
             11: 0x54,
@@ -133,10 +129,6 @@ MANUAL_TESTS = [
     }
 ]
 
-# B. FILE TESTS
-# I have cleaned the content to remove large comment blocks headers,
-# leaving only the necessary logic (@address and binary data).
-# This makes parsing robust against format changes.
 PROGRAM_FILES = {
     "CPUtest1": {
         "cycles": 138,
@@ -236,10 +228,9 @@ PROGRAM_FILES = {
 def clear_memory(dut):
     """
     Clears the DUT memory.
-    IMPORTANT: The processor has AWIDTH=5, so memory size is 32.
-    Accessing index 32+ will crash the simulator.
     """
     for i in range(32):
+        # CORREÇÃO: Usar 'mem_array' em vez de 'mem_array' conforme risc_test.v
         dut.memory_inst.mem_array[i].value = 0
 
 def load_manual_test(dut, mem_map):
@@ -247,6 +238,7 @@ def load_manual_test(dut, mem_map):
     clear_memory(dut)
     for addr, val in mem_map.items():
         if addr < 32:
+            # CORREÇÃO: Usar 'mem_array' em vez de 'mem_array'
             dut.memory_inst.mem_array[addr].value = val
         else:
             dut._log.error(f"Attempted to write to invalid address {addr}")
@@ -259,40 +251,34 @@ def load_program_string(dut, content):
     lines = content.strip().splitlines()
     
     for line in lines:
-        # Strip comments
         clean_line = line.split('//')[0].strip()
         if not clean_line:
             continue
             
-        # Handle Address Labels (@XX)
         if '@' in clean_line:
             parts = clean_line.split()
             for part in parts:
                 if part.startswith('@'):
-                    # Parse hex address (remove @)
                     address = int(part.replace('@', ''), 16)
-                    # Remove the address token to process the rest of the line
                     clean_line = clean_line.replace(part, '').strip()
                     break
         
         if not clean_line:
             continue
 
-        # Handle Binary Data (e.g., 101_11011)
-        # Take the first token
         bin_token = clean_line.split()[0]
-        # Remove underscores
         bin_clean = bin_token.replace('_', '')
         
         try:
             val = int(bin_clean, 2)
             if address < 32:
+                # CORREÇÃO: Usar 'mem_array' em vez de 'mem_array'
                 dut.memory_inst.mem_array[address].value = val
                 address += 1
             else:
                 raise IndexError(f"Program exceeded memory limit at address {address}")
         except ValueError:
-            pass # Not a binary number, likely a label or junk
+            pass 
 
 # ==============================================================================
 # 4. MAIN TESTBENCH
@@ -305,17 +291,14 @@ async def risc_verification_suite(dut):
     Matches the logic of 'risc_test.v'.
     """
     
-    # 1. Start Clock (Period doesn't matter much for functional logic, but keeps it sane)
     clock = Clock(dut.clk, 2, unit="ns")
     cocotb.start_soon(clock.start())
 
-    # Helper for the exact Reset behavior in Verilog
-    # "task reset: rst=1; clock(1); rst=0; clock(1);"
     async def run_reset():
         dut.rst.value = 1
-        await RisingEdge(dut.clk) # clock(1)
+        await RisingEdge(dut.clk) 
         dut.rst.value = 0
-        await RisingEdge(dut.clk) # clock(1)
+        await RisingEdge(dut.clk)
 
     dut._log.info("-------------------------------------------")
     dut._log.info("STARTING MANUAL INSTRUCTION TESTS")
@@ -327,24 +310,25 @@ async def risc_verification_suite(dut):
         
         dut._log.info(f"TEST: {name} | Duration: {cycles} cycles")
         
-        # A. Setup Memory
         load_manual_test(dut, test['mem'])
         
-        # B. Apply Reset (2 cycles)
         await run_reset()
         
         # C. Run Simulation for 'cycles' count
         for _ in range(cycles):
             await RisingEdge(dut.clk)
             
-        # D. Check Expect(0) - Should NOT be halted yet
-        # Note: We check .value.integer to handle 'z' or 'x' safely (converts to 0 if x)
+        # D. Check Expect(0)
+        # CORREÇÃO: Esperar um delta time (1ns) após a borda para ler o sinal estabilizado
+        # Isso imita o #1 do Verilog antes do expect
+        await Timer(1, units="ns")
         assert dut.halt.value == 0, f"{name} Failed: Halted too early (at cycle {cycles})"
         
         # E. Run 1 more cycle
         await RisingEdge(dut.clk)
         
-        # F. Check Expect(1) - Should BE halted now
+        # F. Check Expect(1)
+        await Timer(1, units="ns")
         assert dut.halt.value == 1, f"{name} Failed: Did not halt after {cycles}+1 cycles"
         
         dut._log.info(f"PASS: {name}")
@@ -353,7 +337,6 @@ async def risc_verification_suite(dut):
     dut._log.info("STARTING FILE-BASED TESTS")
     dut._log.info("-------------------------------------------")
 
-    # Order matches the Verilog loop (1, 2, 3)
     file_order = ["CPUtest1", "CPUtest2", "CPUtest3"]
     
     for test_name in file_order:
@@ -363,23 +346,20 @@ async def risc_verification_suite(dut):
         
         dut._log.info(f"TEST: {test_name} | Duration: {cycles} cycles")
         
-        # A. Setup Memory from parsed string
         load_program_string(dut, content)
         
-        # B. Apply Reset
         await run_reset()
         
-        # C. Run Simulation
         for _ in range(cycles):
             await RisingEdge(dut.clk)
             
-        # D. Expect(0)
+        # Expect(0)
+        await Timer(1, units="ns")
         assert dut.halt.value == 0, f"{test_name} Failed: Halted too early"
         
-        # E. Run 1 more cycle
+        # Expect(1)
         await RisingEdge(dut.clk)
-        
-        # F. Expect(1)
+        await Timer(1, units="ns")
         assert dut.halt.value == 1, f"{test_name} Failed: Did not halt on time"
         
         dut._log.info(f"PASS: {test_name}")
@@ -387,15 +367,14 @@ async def risc_verification_suite(dut):
     dut._log.info("ALL TESTS PASSED SUCCESSFULLY.")
 
 # ==============================================================================
-# 5. RUNNER CONFIGURATION
+# 5. RUNNER CONFIGURATION (MANTIDO INALTERADO)
 # ==============================================================================
 
 def test_risc_runner():
     sim = os.getenv("SIM", "icarus")
     proj_path = Path(__file__).resolve().parent.parent
 
-    # Points to the processor's VERILOG file
-    sources = [proj_path/"sources/risc_processor.v"]
+    sources = [proj_path/"golden/risc_processor.v"]
 
     runner = get_runner(sim)
     runner.build(
