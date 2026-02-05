@@ -1,12 +1,10 @@
 # Risc Processor (Verilog)
 
-This project is the implementation of a simple RISC processor in Verilog, developed as part of the "Verilog Language and Application" (VLA) academic course from Cadence. The design includes all the essential components of a CPU, such as an Arithmetic Logic Unit (ALU), a Control Unit (FSM), registers, and memory.
-
-The repository also contains three diagnostic programs used to verify the processor's functionality. These tests range from basic instruction validation to running a complete algorithm to calculate the Fibonacci sequence.
+This project is the implementation of a simple RISC processor in Verilog. The design includes all the essential components of a CPU, such as an Arithmetic Logic Unit (ALU), a Control Unit (FSM), registers, and memory.
 
 ## Architecture Overview
 
-The processor is built from the following Verilog modules:
+The processor is built from the following Verilog modules which are instantiated in a top module risc:
 
 * **`controller`**: The Control Unit. This is the processor's brain, implemented as a Finite State Machine (FSM). It receives the instruction `opcode`, the current `phase` (clock cycle state), and the `zero` flag from the ALU. Based on these inputs, it generates all necessary control signals for the datapath, such as `rd` (read), `wr` (write), `ld_pc` (load PC), `ld_ac` (load accumulator), and `halt`.
 * **`alu`**: The Arithmetic Logic Unit. This unit performs mathematical and logical operations. It implements `ADD`, `AND`, and `XOR`. It also outputs a `a_is_zero` flag, which is used by the controller for conditional instructions.
