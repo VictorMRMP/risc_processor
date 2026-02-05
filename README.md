@@ -30,6 +30,7 @@ Based on the controller logic and test programs, the processor implements the fo
 | **JMP** | `111` | Jumps to a specific memory address. |
 
 ## Evaluating Results
+[Evaluation link](https://www.hud.ai/jobs/c62c1afd-39cf-437c-bdca-0e67a824c2dc)
 
 The prompt used was: 
 
@@ -37,7 +38,6 @@ The prompt used was:
 
 ![Evaluation test cases with 50% score](img/ResultsRiscProcessor.png) 
 
-[Evaluation link](https://www.hud.ai/jobs/c62c1afd-39cf-437c-bdca-0e67a824c2dc)
 
 ## Agent Failure Analysis
 [Trace described](https://www.hud.ai/trace/08fb00b3-02f5-43fa-8a87-efe7deb3239e)
@@ -51,8 +51,9 @@ The prompt used was:
 **D. Faulty assumptions / missed insights:** Flawed reasoning: The model assumed a standard, efficient FSM implementation where instructions execute as soon as operands are available. It missed the insight that this specific architecture requires "dummy cycles" or fixed-phase micro-operations, delaying execution to match a rigid control table rather than optimizing for speed.
 
 ## Aditional test
-Removing complementary descriptions in the prompt we achieve similar behaviour in the generated code but with less score.
 [Evaluation link](https://www.hud.ai/jobs/c4608ced-5803-486f-bb65-04e182d6befd)
+
+Removing complementary descriptions in the prompt we achieve similar behaviour in the generated code but with less score.
 ![Evaluation test cases with poor prompt and 22% score](img/ResultsRiscProcessorAdditional.png) 
 
 The prompt used was: 
