@@ -1,6 +1,6 @@
 # Risc Processor (Verilog)
 
-This project is the implementation of a simple RISC processor in Verilog. The design includes all the essential components of a CPU, such as an Arithmetic Logic Unit (ALU), a Control Unit (FSM), registers, and memory.
+This project is the implementation of a simple RISC processor which prioritizes cycle-accuracy over performance in Verilog. The design includes all the essential components of a CPU, such as an Arithmetic Logic Unit (ALU), a Control Unit (FSM), registers, and memory.
 
 ## Architecture Overview
 
