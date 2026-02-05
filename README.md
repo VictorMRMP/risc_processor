@@ -46,7 +46,7 @@ The prompt used was:
 
 **B. Root cause:** The model's controller executed instructions immediately upon decoding, in contrast with the legacy RISC developed for the golden model. In the generated code, the HLT operation triggers in Phase 2 (the first execution phase). However, the the golden model uses a fixed control matrix that explicitly delays the halt signal assertion until Phase 4. This cycle mismatch caused the cycle-accurate assertion to fail. The cases that passed the test designed a RISC that prioritized cycle-accuracy over performance, such as described in the prompt.
 
-**C. QA:** The agent generated a valid, but failed because didn't prioritized cycle-accuracy over performance specified in the prompt.
+**C. QA:** The agent generated a valid RISC processor, but failed because didn't prioritized cycle-accuracy over performance specified in the prompt.
 
 **D. Faulty assumptions / missed insights:** Flawed reasoning: The model assumed a standard, efficient FSM implementation where instructions execute as soon as operands are available. It missed the insight that this specific architecture requires "dummy cycles" or fixed-phase micro-operations, delaying execution to match a rigid control table rather than optimizing for speed.
 
