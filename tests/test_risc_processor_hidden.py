@@ -316,7 +316,6 @@ async def risc_verification_suite(dut):
         await RisingEdge(dut.clk) # clock(1)
         dut.rst.value = 0
         await RisingEdge(dut.clk) # clock(1)
-        await RisingEdge(dut.clk) # clock(1)
 
     dut._log.info("-------------------------------------------")
     dut._log.info("STARTING MANUAL INSTRUCTION TESTS")
