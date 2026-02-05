@@ -311,7 +311,8 @@ async def risc_verification_suite(dut):
         await RisingEdge(dut.clk) # clock(1)
         dut.rst.value = 0
         await RisingEdge(dut.clk) # clock(1)
-        await Timer(1, units="ps")  # Small delay to ensure stable state
+        #await RisingEdge(dut.clk) # clock(1)
+        #await Timer(1, units="ns")  # Small delay to ensure stable state
 
     dut._log.info("-------------------------------------------")
     dut._log.info("STARTING MANUAL INSTRUCTION TESTS")
@@ -339,7 +340,7 @@ async def risc_verification_suite(dut):
         
         # E. Run 1 more cycle
         await RisingEdge(dut.clk)
-        
+        await Timer(1, units="ps")
         # F. Check Expect(1) - Should BE halted now
         assert dut.halt.value == 1, f"{name} Failed: Did not halt after {cycles}+1 cycles"
         
@@ -368,12 +369,15 @@ async def risc_verification_suite(dut):
         # C. Run Simulation
         for _ in range(cycles):
             await RisingEdge(dut.clk)
+        
+        await Timer(1, units="ps")
             
         # D. Expect(0)
         assert dut.halt.value == 0, f"{test_name} Failed: Halted too early"
         
         # E. Run 1 more cycle
         await RisingEdge(dut.clk)
+        await Timer(1, units="ps")
         
         # F. Expect(1)
         assert dut.halt.value == 1, f"{test_name} Failed: Did not halt on time"
@@ -391,7 +395,7 @@ def test_risc_runner():
     proj_path = Path(__file__).resolve().parent.parent
 
     # Points to the processor's VERILOG file
-    sources = [proj_path/"sources/risc_processor.v"]
+    sources = [proj_path/"golden/risc_processor.v"]
 
     runner = get_runner(sim)
     runner.build(
