@@ -395,7 +395,7 @@ def test_risc_runner():
     proj_path = Path(__file__).resolve().parent.parent
 
     # Points to the processor's VERILOG file
-    sources = [proj_path/"golden/risc_processor.v"]
+    sources = [proj_path/"sources/risc_processor.v"]
 
     runner = get_runner(sim)
     runner.build(
