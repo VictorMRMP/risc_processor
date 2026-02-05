@@ -53,7 +53,7 @@ The prompt used was:
 ## Aditional test
 [Evaluation link](https://www.hud.ai/jobs/c4608ced-5803-486f-bb65-04e182d6befd)
 
-Removing complementary descriptions in the prompt we achieve similar behaviour in the generated code but with less score.
+By removing the supplementary descriptions in the prompt, we obtain similar behavior in the generated code, but with a lower score.
 ![Evaluation test cases with poor prompt and 22% score](img/ResultsRiscProcessorAdditional.png) 
 
 The prompt used was: 
