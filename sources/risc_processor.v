@@ -48,7 +48,7 @@ module memory
   input  wire [AWIDTH-1:0] addr ,
   inout  wire [DWIDTH-1:0] data  
  );
-reg [DWIDTH-1:0] mem [0:2**AWIDTH-1];
+reg [DWIDTH-1:0] mem_array [0:2**AWIDTH-1];
 
 
 endmodule
