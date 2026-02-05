@@ -233,17 +233,17 @@ def clear_memory(dut):
     """
     Clears the DUT memory.
     IMPORTANT: The processor has AWIDTH=5, so memory size is 32.
-    Accessing index 32+ will crash the simulator. The name of the memory instance must be mem_array.
+    Accessing index 32+ will crash the simulator. The name of the memory instance must be mem.
     """
     for i in range(32):
-        dut.memory_inst.mem_array[i].value = 0
+        dut.memory_inst.mem[i].value = 0
 
 def load_manual_test(dut, mem_map):
     """Loads a specific dictionary of address->value into memory."""
     clear_memory(dut)
     for addr, val in mem_map.items():
         if addr < 32:
-            dut.memory_inst.mem_array[addr].value = val
+            dut.memory_inst.mem[addr].value = val
         else:
             dut._log.error(f"Attempted to write to invalid address {addr}")
 
@@ -283,7 +283,7 @@ def load_program_string(dut, content):
         try:
             val = int(bin_clean, 2)
             if address < 32:
-                dut.memory_inst.mem_array[address].value = val
+                dut.memory_inst.mem[address].value = val
                 address += 1
             else:
                 raise IndexError(f"Program exceeded memory limit at address {address}")
