@@ -282,9 +282,8 @@ def load_program_string(dut, content):
 
 async def run_clock(dut, cycles=1):
     """
-    Simula exatamente o comportamento da task 'clock' do Verilog.
+    Simulate the behaviour of the clock task.
     Verilog: clk=0; #1; clk=1; #1;
-    Isso evita problemas de sincronia do Clock automático.
     """
     for _ in range(cycles):
         dut.clk.value = 0
@@ -299,7 +298,6 @@ async def risc_verification_suite(dut):
     Matches the logic of 'risc_test.v'.
     """
     
-    # NÃO iniciamos um Clock automático aqui. Usaremos run_clock.
     
     # Helper para Reset
     async def run_reset():
