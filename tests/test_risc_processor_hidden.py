@@ -1,8 +1,7 @@
 import os
 from pathlib import Path
 import cocotb
-from cocotb.clock import Clock
-from cocotb.triggers import RisingEdge, Timer # [Adicionado Timer]
+from cocotb.triggers import Timer
 from cocotb_tools.runner import get_runner
 
 # ==============================================================================
@@ -20,7 +19,6 @@ JMP = 7
 # ==============================================================================
 # 2. TEST DATA DEFINITIONS
 # ==============================================================================
-# (Mantido igual ao original)
 MANUAL_TESTS = [
     {
         "name": "HLT Instruction",
@@ -69,7 +67,7 @@ MANUAL_TESTS = [
             5: (JMP << 5) | 6,
             6: (HLT << 5),
             7: 1,
-            8: 0  # Destination
+            8: 0
         }
     },
     {
@@ -230,7 +228,7 @@ def clear_memory(dut):
     Clears the DUT memory.
     """
     for i in range(32):
-        # CORREÇÃO: Usar 'mem_array' em vez de 'mem_array' conforme risc_test.v
+        # Usando mem_array conforme sua indicação
         dut.memory_inst.mem_array[i].value = 0
 
 def load_manual_test(dut, mem_map):
@@ -238,7 +236,6 @@ def load_manual_test(dut, mem_map):
     clear_memory(dut)
     for addr, val in mem_map.items():
         if addr < 32:
-            # CORREÇÃO: Usar 'mem_array' em vez de 'mem_array'
             dut.memory_inst.mem_array[addr].value = val
         else:
             dut._log.error(f"Attempted to write to invalid address {addr}")
@@ -272,7 +269,6 @@ def load_program_string(dut, content):
         try:
             val = int(bin_clean, 2)
             if address < 32:
-                # CORREÇÃO: Usar 'mem_array' em vez de 'mem_array'
                 dut.memory_inst.mem_array[address].value = val
                 address += 1
             else:
@@ -284,6 +280,18 @@ def load_program_string(dut, content):
 # 4. MAIN TESTBENCH
 # ==============================================================================
 
+async def run_clock(dut, cycles=1):
+    """
+    Simula exatamente o comportamento da task 'clock' do Verilog.
+    Verilog: clk=0; #1; clk=1; #1;
+    Isso evita problemas de sincronia do Clock automático.
+    """
+    for _ in range(cycles):
+        dut.clk.value = 0
+        await Timer(1, units="ns")
+        dut.clk.value = 1
+        await Timer(1, units="ns")
+
 @cocotb.test()
 async def risc_verification_suite(dut):
     """
@@ -291,14 +299,17 @@ async def risc_verification_suite(dut):
     Matches the logic of 'risc_test.v'.
     """
     
-    clock = Clock(dut.clk, 2, unit="ns")
-    cocotb.start_soon(clock.start())
-
+    # NÃO iniciamos um Clock automático aqui. Usaremos run_clock.
+    
+    # Helper para Reset
     async def run_reset():
+        # Verilog: rst = 1; clock(1);
         dut.rst.value = 1
-        await RisingEdge(dut.clk) 
+        await run_clock(dut, 1)
+        
+        # Verilog: rst = 0; clock(1);
         dut.rst.value = 0
-        await RisingEdge(dut.clk)
+        await run_clock(dut, 1)
 
     dut._log.info("-------------------------------------------")
     dut._log.info("STARTING MANUAL INSTRUCTION TESTS")
@@ -310,26 +321,27 @@ async def risc_verification_suite(dut):
         
         dut._log.info(f"TEST: {name} | Duration: {cycles} cycles")
         
+        # A. Setup Memory
         load_manual_test(dut, test['mem'])
         
+        # B. Apply Reset
         await run_reset()
         
         # C. Run Simulation for 'cycles' count
-        for _ in range(cycles):
-            await RisingEdge(dut.clk)
+        await run_clock(dut, cycles)
             
         # D. Check Expect(0)
-        # CORREÇÃO: Esperar um delta time (1ns) após a borda para ler o sinal estabilizado
-        # Isso imita o #1 do Verilog antes do expect
-        await Timer(1, units="ns")
-        assert dut.halt.value == 0, f"{name} Failed: Halted too early (at cycle {cycles})"
+        # O Verilog verifica imediatamente após o clock terminar.
+        # Como run_clock termina após o delay da borda de subida, o sinal já propagou.
+        val_check_0 = dut.halt.value
+        assert val_check_0 == 0, f"{name} Failed: Halted too early (at cycle {cycles}). Got {val_check_0}"
         
         # E. Run 1 more cycle
-        await RisingEdge(dut.clk)
+        await run_clock(dut, 1)
         
         # F. Check Expect(1)
-        await Timer(1, units="ns")
-        assert dut.halt.value == 1, f"{name} Failed: Did not halt after {cycles}+1 cycles"
+        val_check_1 = dut.halt.value
+        assert val_check_1 == 1, f"{name} Failed: Did not halt after {cycles}+1 cycles. Got {val_check_1}"
         
         dut._log.info(f"PASS: {name}")
 
@@ -350,16 +362,16 @@ async def risc_verification_suite(dut):
         
         await run_reset()
         
-        for _ in range(cycles):
-            await RisingEdge(dut.clk)
+        # Run Simulation
+        await run_clock(dut, cycles)
             
         # Expect(0)
-        await Timer(1, units="ns")
         assert dut.halt.value == 0, f"{test_name} Failed: Halted too early"
         
+        # Run 1 more cycle
+        await run_clock(dut, 1)
+        
         # Expect(1)
-        await RisingEdge(dut.clk)
-        await Timer(1, units="ns")
         assert dut.halt.value == 1, f"{test_name} Failed: Did not halt on time"
         
         dut._log.info(f"PASS: {test_name}")
@@ -367,13 +379,14 @@ async def risc_verification_suite(dut):
     dut._log.info("ALL TESTS PASSED SUCCESSFULLY.")
 
 # ==============================================================================
-# 5. RUNNER CONFIGURATION (MANTIDO INALTERADO)
+# 5. RUNNER CONFIGURATION
 # ==============================================================================
 
 def test_risc_runner():
     sim = os.getenv("SIM", "icarus")
     proj_path = Path(__file__).resolve().parent.parent
 
+    # Points to the processor's VERILOG file
     sources = [proj_path/"sources/risc_processor.v"]
 
     runner = get_runner(sim)
