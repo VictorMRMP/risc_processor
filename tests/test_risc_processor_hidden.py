@@ -374,7 +374,7 @@ def test_risc_runner():
     sim = os.getenv("SIM", "icarus")
     proj_path = Path(__file__).resolve().parent.parent
 
-    sources = [proj_path/"golden/risc_processor.v"]
+    sources = [proj_path/"sources/risc_processor.v"]
 
     runner = get_runner(sim)
     runner.build(
