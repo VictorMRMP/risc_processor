@@ -39,7 +39,7 @@ The prompt used was:
 ![Evaluation test cases with 50% score](img/ResultsRiscProcessor.png) 
 
 
-## Agent Failure Analysis
+**Agent Failure Analysis**
 [Trace described](https://www.hud.ai/trace/08fb00b3-02f5-43fa-8a87-efe7deb3239e)
 
 **A. Symptoms:** The HLT Instruction test failed with the error "Halted too early" verified in the testbench. The processor asserted the halt signal at the end of cycle 2, but the testbench expected the signal to remain low until cycle 4.
