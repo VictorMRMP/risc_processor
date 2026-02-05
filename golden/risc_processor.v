@@ -199,12 +199,12 @@ module register
 );
 always@(posedge clk)
 begin
-if(load)
-	data_out=data_in;
-if(rst)
-	data_out=8'b00000000;
-else
- 	data_out<=data_out;
+if (rst)
+        data_out <= 0;          
+    else if (load)
+        data_out <= data_in;   
+    else
+        data_out <= data_out;   
 end
 endmodule
 
@@ -252,15 +252,11 @@ module driver
 (
  input data_en,
  input [WIDTH-1:0] data_in,
- output reg [WIDTH-1:0] data_out
+ output [WIDTH-1:0] data_out
 );
-always @*
-begin
-if(data_en==1)
-		data_out=data_in;
-else
-		data_out=8'dz;
-end
+
+assign data_out = (data_en) ? data_in : {WIDTH{1'bz}};
+
 endmodule
 
 
